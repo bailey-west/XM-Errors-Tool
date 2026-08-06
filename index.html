@@ -6,8 +6,8 @@
   <title>XM360 Error Pathing & Crowdsource Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans p-6">
-  <div class="max-w-5xl mx-auto">
+<body class="bg-slate-50 text-slate-800 font-sans p-6" onload="renderDictionary()">
+  <div class="max-w-6xl mx-auto">
     
     <!-- Header & Navigation -->
     <header class="mb-8 text-center">
@@ -16,26 +16,23 @@
       
       <div class="flex justify-center space-x-4 mt-6">
         <button onclick="switchTab('search')" id="tab-search" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-full transition shadow">Error Lookup</button>
+        <button onclick="switchTab('dictionary')" id="tab-dictionary" class="px-6 py-2 bg-white text-slate-600 border border-slate-300 font-semibold rounded-full hover:bg-slate-100 transition shadow-sm">Dictionary</button>
         <button onclick="switchTab('submit')" id="tab-submit" class="px-6 py-2 bg-white text-slate-600 border border-slate-300 font-semibold rounded-full hover:bg-slate-100 transition shadow-sm">Submit a Fix</button>
       </div>
     </header>
 
     <!-- TAB 1: SEARCH ERRORS -->
     <div id="view-search" class="block">
-      <!-- Search Bar -->
       <div class="flex justify-center mb-10 shadow-sm rounded-lg max-w-2xl mx-auto">
-        <input type="text" id="searchInput" placeholder="Try: BYO-700, EC200, MBC-7050, MSPAGENT-500" class="w-full p-4 border border-slate-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase">
+        <input type="text" id="searchInput" placeholder="Search any code (e.g., BYO-700, EC4400, MBC-7050)" class="w-full p-4 border border-slate-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase">
         <button onclick="searchError()" class="bg-blue-600 text-white px-8 py-4 rounded-r-lg font-semibold hover:bg-blue-700 transition">Search</button>
       </div>
 
-      <!-- Error Not Found Message -->
       <div id="notFoundMessage" class="hidden text-center text-red-500 font-semibold mb-6">
-        Error code not found in prototype database. Try BYO-700, EC200, MBC-7050, or MSPAGENT-500.
+        Error code not found. Check the Dictionary tab for a valid list.
       </div>
 
-      <!-- Results Section (Hidden initially) -->
-      <div id="resultsArea" class="hidden space-y-6">
-        
+      <div id="resultsArea" class="hidden space-y-6 max-w-5xl mx-auto">
         <!-- Error Details -->
         <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
           <h2 class="text-2xl font-bold text-slate-800" id="errorCodeTitle"></h2>
@@ -52,62 +49,66 @@
             <button onclick="generateAI()" class="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-700 transition shadow">Ask AI for Insights</button>
           </div>
           
-          <!-- AI Output Area -->
           <div id="aiResponse" class="mt-4 text-indigo-900 hidden bg-white p-4 rounded border border-indigo-100">
             <p class="animate-pulse text-sm text-indigo-600" id="aiLoading">Scanning recent ECM tickets and network logs...</p>
-            <p class="text-sm hidden" id="aiText"><strong>AI Suggestion:</strong> We are seeing a 15% spike in this error today. Make sure to double-check the account history before escalating to Tier 2.</p>
+            <p class="text-sm hidden" id="aiText"></p>
           </div>
         </div>
 
         <!-- Pathing Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          <!-- Official Pathing -->
           <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 h-full">
             <h3 class="text-lg font-semibold text-slate-800 border-b pb-2 mb-4">Official Agent Action</h3>
             <p class="text-sm text-slate-700 leading-relaxed" id="officialAction"></p>
           </div>
 
-          <!-- Crowdsourced Info -->
           <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 h-full">
             <h3 class="text-lg font-semibold text-slate-800 border-b pb-2 mb-4">Top Community Notes</h3>
-            <div class="space-y-4">
-              <div class="bg-amber-50 p-4 rounded text-sm border border-amber-200 relative">
-                <p class="font-semibold text-amber-900">Alex M. <span class="text-amber-600 font-normal ml-2">2 hours ago</span></p>
-                <p class="text-slate-800 mt-1">If the standard path doesn't work, try clearing your browser cache and pulling the account back up. That bypassed the block for me on 3 different accounts today.</p>
-                <div class="mt-3 flex space-x-4 border-t border-amber-200 pt-2">
-                  <button class="text-xs font-semibold text-slate-600 hover:text-green-600 transition">👍 8 Helpful</button>
-                </div>
-              </div>
+            <div class="space-y-4" id="communityNotes">
+              <!-- Dynamically populated to look somewhat real -->
             </div>
           </div>
-          
         </div>
       </div>
     </div>
 
-    <!-- TAB 2: SUBMIT A FIX -->
+    <!-- TAB 2: DICTIONARY -->
+    <div id="view-dictionary" class="hidden">
+      <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 text-sm border-b border-slate-200">
+              <th class="p-4 w-40">Error Code</th>
+              <th class="p-4 w-1/3">Description</th>
+              <th class="p-4">Agent Action</th>
+            </tr>
+          </thead>
+          <tbody id="dictionaryBody" class="text-sm text-slate-700 divide-y divide-slate-100">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: SUBMIT A FIX -->
     <div id="view-submit" class="hidden max-w-2xl mx-auto">
       <div class="bg-white p-8 rounded-lg shadow-sm border border-slate-200">
         <h2 class="text-2xl font-bold text-slate-800 mb-2">Contribute a Workaround</h2>
-        <p class="text-slate-500 text-sm mb-6">Did you find a reliable way to resolve an undocumented error? Share it with the team to speed up ticket resolution.</p>
+        <p class="text-slate-500 text-sm mb-6">Did you find a reliable way to resolve an undocumented error? Share it.</p>
         
         <form onsubmit="submitFix(event)" class="space-y-5">
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1">Error Code</label>
             <input type="text" placeholder="e.g., MBC-7305" class="w-full p-3 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase" required>
           </div>
-          
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1">What did you experience?</label>
-            <textarea rows="2" placeholder="Briefly describe the scenario..." class="w-full p-3 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+            <textarea rows="2" class="w-full p-3 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
           </div>
-
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1">Your Workaround / Solution</label>
-            <textarea rows="4" placeholder="Step-by-step how you bypassed or resolved the issue..." class="w-full p-3 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+            <textarea rows="4" class="w-full p-3 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
           </div>
-          
           <button type="submit" class="w-full bg-green-600 text-white px-4 py-3 rounded font-semibold hover:bg-green-700 transition shadow">Submit for Review</button>
         </form>
       </div>
@@ -116,49 +117,96 @@
   </div>
 
   <script>
-    // Mock Database built from your provided text
+    // Full Error Database
     const errorDatabase = {
-      "BYO-700": {
-        description: "Device is tied to a pre-activated line.",
-        action: "Check for the pending order in the Account History page of XM360. If you can’t resolve the pending order, escalate using standard ECM steps."
-      },
-      "EC200": {
-        description: "Xfinity Mobile requires a residential account.",
-        action: "Xfinity Mobile is only available to residential internet customers. Ask the customer if they want help setting up Xfinity Internet."
-      },
-      "MBC-7050": {
-        description: "Request Body Parameters are invalid. Special characters are not allowed.",
-        action: "Verify and remove special characters or spaces before or after the entry, then resubmit. If the issue persists, then escalate."
-      },
-      "MSPAGENT-500": {
-        description: "API failure error.",
-        action: "Exit the session and retry. If the issue persists, then escalate."
-      }
+      "BYO-700": { description: "Device is tied to a pre-activated line.", action: "Check for the pending order in the Account History page of XM360. If you can’t resolve the pending order, escalate using the steps listed above." },
+      "BYO-1000": { description: "Device is not eligible.", action: "Research where the device came from to confirm whether it is an eligible Xfinity device. If it is, follow the standard escalation steps." },
+      "BYO-1100": { description: "Device unlock policy is unknown.", action: "Bypass the error. If the bypass option is not available, then escalate." },
+      "BYO-1900": { description: "Android unlock status unknown.", action: "Follow standard escalation steps." },
+      "BYO-2000": { description: "Device lock status unknown. The system was unable to verify the unlock status at the time.", action: "Refer to the Old Service Provider (OSP) to confirm if the device is unlocked. Note: You can enter the order, but the action will fail if the device isn't unlocked before activation." },
+      "BYO-2100": { description: "Device operating system (OS) version unknown.", action: "Tell the customer to update their device to the latest OS version." },
+      "BYO-2500": { description: "eSIM compatibility not confirmed.", action: "Check the device in the Xfinity Mobile Ops Tool to confirm the EID is populated. If not, open a TechSpot ticket to escalate." },
+      "EC0": { description: "Generic error; reason not known.", action: "Follow standard escalation steps." },
+      "EC200": { description: "Xfinity Mobile requires a residential account.", action: "Xfinity Mobile is only available to residential internet customers. Ask the customer if they want help setting up Xfinity Internet." },
+      "EC300": { description: "Your order cannot be processed. An Xfinity Internet subscription is required to add lines.", action: "Xfinity Mobile requires a subscription to Xfinity Internet. Ask the customer if they want help setting up Xfinity Internet and transfer them using OneCTI." },
+      "EC400": { description: "Xfinity Mobile requires an Xfinity Internet account.", action: "Ask the customer if they want help setting up internet services and transfer them using OneCTI." },
+      "EC500": { description: "You must be the primary account holder to continue.", action: "Tell the customer only the primary account holder can set up Xfinity Mobile service." },
+      "EC600": { description: "Bill past due.", action: "Ask the customer if they want to make a payment." },
+      "EC800": { description: "Xfinity Mobile requires an active account status.", action: "Work with the customer to identify why the account is inactive." },
+      "EC900": { description: "You must have billing permissions to continue.", action: "Tell the customer only the primary account holder can set up Xfinity Mobile service." },
+      "EC1000": { description: "It looks like your account is not on our Xfinity Mobile eligibility list.", action: "Explain that Xfinity Mobile is only available to Xfinity Internet customers, and let the customer know that we'll keep them posted as we continue to expand our services." },
+      "EC1100": { description: "You need an Xfinity Internet account in order to continue.", action: "Xfinity Mobile service is only available to Xfinity Internet customers. Transfer using OneCTI to add internet." },
+      "EC1300": { description: "Only non-employee.", action: "Explain to the customer they have no Xfinity services with us. To add Xfinity Mobile, they need Xfinity Internet." },
+      "EC1400": { description: "Bulk account with no existing monthly recurring charge (MRC) with Comcast.", action: "Explain to the customer they have Xfinity Internet through a bulk account. To add Xfinity Mobile lines, they'll need a direct subscription." },
+      "EC1500": { description: "Customer has prepaid services.", action: "Explain that a postpaid account is required to access Xfinity Mobile services." },
+      "EC1600": { description: "Need a line of business (LOB) with Comcast with a pending Xfinity Internet installation.", action: "Tell the customer they have an installation date coming up, but they need active Xfinity services to continue." },
+      "EC1900": { description: "The customer’s Xfinity ID has been or is suspected of being compromised.", action: "The account’s primary user ID or secondary user ID is disabled. To proceed, the customer needs to reset their password." },
+      "EC2100": { description: "The customer has a past due Xfinity Mobile balance.", action: "Ask the customer if they want to make a payment." },
+      "EC2200": { description: "Non-Pay ceased.", action: "Check the account status, escalate if everything looks correct." },
+      "EC4100": { description: "Customer is ineligible to purchase.", action: "Xfinity Mobile service is only available to Xfinity Internet customers. Transfer using OneCTI." },
+      "EC4200": { description: "Cable missed payments.", action: "There was a missed payment on the customer’s account. Help them resolve any outstanding balance." },
+      "EC4400": { description: "No eligible disconnect period.", action: "Confirm there’s no pending orders associated with the line. Verify the line is still active on the account and network. Escalate BAU if unresolved." },
+      "EC5000": { description: "Customer is ineligible to purchase.", action: "This error usually displays with an MBC error that explains the issue. Open a TechSpot ticket." },
+      "EC5100": { description: "Active NOW Internet customer.", action: "Cannot add to Xfinity Mobile while the customer has NOW Internet. The customer can sign up for Xfinity Internet first, or can enroll in NOW Mobile instead. Internet type must be Postpaid." },
+      "UPEL-100": { description: "Device not found in inventory.", action: "Confirm the IMEI and ICCID of the device the customer wants to NDEL." },
+      "UPEL-200": { description: "Unsupported device SKU.", action: "Confirm the IMEI and ICCID of the device the customer wants to NDEL." },
+      "UPEL-300": { description: "Line is not on a payment plan.", action: "This device does not have a device payment plan (DPP). The customer has to buy the new device as an NDEL." },
+      "MBC-1002": { description: "Error while Invoking Payment Service-SubmitPayment.", action: "There is an issue with the customer’s card. Try a different card or ask them to contact their bank." },
+      "MBC-1003": { description: "Error while invoking Payment Service-AuthorizePayment.", action: "Request a different card or other form of payment. The credit card has reached the limit." },
+      "MBC-1522": { description: "Not Authorized", action: "The agent’s profile isn’t allowed to make this change. Escalate to a supervisor." },
+      "MBC-2002": { description: "Error retrieving authorization token.", action: "Xfinity Mobile has a transaction maximum of $5,000. Ask the customer to remove an item if you get this error." },
+      "MBC-2026": { description: "Error invoking CreateSubmitConfiguration.", action: "Pending order was already submitted and needs to be completed before a new order can be created." },
+      "MBC-2030": { description: "This line isn’t active with an MDN.", action: "The line must be activated with the phone number before any changes." },
+      "MBC-3005": { description: "Error updating notification preferences.", action: "Confirm the customer’s email address. Make sure it doesn’t include special characters." },
+      "MBC-4002": { description: "The promo code you entered has expired.", action: "Please enter the correct promo code." },
+      "MBC-5029": { description: "Error retrieving simled information by ICCID.", action: "SIM Card information is incorrect and does not belong to Xfinity. Enter correct ICCID." },
+      "MBC-7009": { description: "You entered an invalid SSN or DOB.", action: "Please exit and enter the correct SSN and DOB." },
+      "MBC-7020": { description: "Shipping address is required to process order.", action: "Please update the request and retry." },
+      "MBC-7032": { description: "A Payment Plan is required for submitting the order.", action: "Go into the cart and select the Payment Plan again. If the issue keeps happening, exit and start over." },
+      "MBC-7050": { description: "Request Body Parameters are invalid. Special characters are not allowed.", action: "Verify and remove special characters or spaces before or after the entry, then resubmit." },
+      "MBC-7066": { description: "The nickname cannot be added, since there is an existing line with the same nickname.", action: "Add a new nickname to continue." },
+      "MBC-7067": { description: "Phone number selection and carrier entry is not allowed when you are not porting.", action: "Restart the order and select an Xfinity generated number from the beginning." },
+      "MBC-7072": { description: "Porting Eligibility Check failed for the entered telephone number.", action: "We can't port the number. Try another MDN or select an Xfinity number." },
+      "MBC-7092": { description: "Legal Age Verification has not been completed.", action: "Authorization wasn’t captured. Restart and re-enter the DOB/SSN." },
+      "MBC-7104": { description: "The item you are looking for is not available.", action: "Select a different device or try again later." },
+      "MBC-7112": { description: "Device is not eligible for bring your own device (BYOD).", action: "The device isn't eligible for BYOD." },
+      "MBC-7113": { description: "SIM Card is invalid.", action: "Re-enter the full 20-digit SIM card number and try again." },
+      "MBC-7118": { description: "Cannot add any more lines since the preorder cap has been reached.", action: "The customer can only preorder one device per order. Finish the first, then start a new order." },
+      "MBC-7227": { description: "Cannot add any more lines since the backorder cap has been reached.", action: "The customer can’t have multiple backorders. Wait until the device is available." },
+      "MBC-7292": { description: "Device with the same phone number is already added to the cart.", action: "A device with the same phone number is already in the cart. Select a different phone number." },
+      "MBC-7300": { description: "Customer is ineligible.", action: "The customer is ineligible for a sale. See Troubleshooting customer eligibility errors in XM360." },
+      "MBC-7305": { description: "For IN_STORE flow imei should be a part of the device.", action: "Check the IMEI to ensure it was scanned properly or entered correctly, then proceed." },
+      "MBC-7308": { description: "Couldn’t retrieve credit information. Please retry.", action: "Customer may have a lock on their file. Possible outage with Experian." },
+      "MBC-7311": { description: "Entered amount is above maximum allowed amount.", action: "Customers can only perform a transaction valued at less than $5,000." },
+      "MBC-7312": { description: "Card used for the transaction has insufficient funds.", action: "Have the customer try a different card or contact their bank." },
+      "MBC-7372": { description: "Auth ID not validated.", action: "Accessory-only purchase was selected as the reason for ID Auth, but a device was added. Restart sale." },
+      "MBC-7383": { description: "The item cannot be added to the cart with the simType present.", action: "Correct the simType before proceeding." },
+      "MBC-7420": { description: "A trade-in promotion is not applied to the item in the Cart.", action: "Remove the trade-in device or pick a trade-in device and plan that works for the promotion." },
+      "MBC-8032": { description: "Fraud check failed.", action: "Verify the customer’s credit agency account isn’t locked or frozen. If not, then escalate." },
+      "MSPAGENT-404": { description: "Server could not find what was requested.", action: "Refresh the page or wait a few minutes and try again." },
+      "MSPAGENT-500": { description: "API failure error", action: "Exit the session and retry. If the issue persists, then escalate." },
+      "MSPAGENT-502": { description: "Bad gateway.", action: "Try using a different browser, clearing cache, using developer tools, or close the error and try again." },
+      "NDEL-100": { description: "Line status is ineligible.", action: "Advise the customer the line isn’t eligible for an early upgrade/NDEL." },
+      "NDEL-200": { description: "Line status is ineligible.", action: "Lines with a pending return (RMA) can’t be processed as an NDEL order." },
+      "NDEL-800": { description: "Device has open claims.", action: "This device has an open claim with Assurant." },
+      "CYB-201": { description: "The issuing bank has questions about the request.", action: "You won’t get an authorization code automatically, but you might get one if you call the processor." },
+      "CYB-202": { description: "The card is expired.", action: "Use a different form of payment." }
     };
 
-    // Tab Switching Logic
     function switchTab(tab) {
-      const searchView = document.getElementById('view-search');
-      const submitView = document.getElementById('view-submit');
-      const tabSearchBtn = document.getElementById('tab-search');
-      const tabSubmitBtn = document.getElementById('tab-submit');
-
-      if (tab === 'search') {
-        searchView.classList.remove('hidden');
-        submitView.classList.add('hidden');
-        
-        tabSearchBtn.className = "px-6 py-2 bg-blue-600 text-white font-semibold rounded-full transition shadow";
-        tabSubmitBtn.className = "px-6 py-2 bg-white text-slate-600 border border-slate-300 font-semibold rounded-full hover:bg-slate-100 transition shadow-sm";
-      } else {
-        searchView.classList.add('hidden');
-        submitView.classList.remove('hidden');
-        
-        tabSubmitBtn.className = "px-6 py-2 bg-blue-600 text-white font-semibold rounded-full transition shadow";
-        tabSearchBtn.className = "px-6 py-2 bg-white text-slate-600 border border-slate-300 font-semibold rounded-full hover:bg-slate-100 transition shadow-sm";
-      }
+      ['search', 'dictionary', 'submit'].forEach(t => {
+        const view = document.getElementById(`view-${t}`);
+        const btn = document.getElementById(`tab-${t}`);
+        if (t === tab) {
+          view.classList.remove('hidden');
+          btn.className = "px-6 py-2 bg-blue-600 text-white font-semibold rounded-full transition shadow";
+        } else {
+          view.classList.add('hidden');
+          btn.className = "px-6 py-2 bg-white text-slate-600 border border-slate-300 font-semibold rounded-full hover:bg-slate-100 transition shadow-sm";
+        }
+      });
     }
 
-    // Search Logic
     function searchError() {
       const input = document.getElementById('searchInput').value.trim().toUpperCase();
       const resultsArea = document.getElementById('resultsArea');
@@ -172,23 +220,36 @@
       document.getElementById('aiText').classList.add('hidden');
 
       if (errorDatabase[input]) {
-        // Populate Data
         document.getElementById('errorCodeTitle').innerText = input;
         document.getElementById('errorDescription').innerText = errorDatabase[input].description;
         document.getElementById('officialAction').innerText = errorDatabase[input].action;
         
-        // Show results, hide error
+        // Add some fake community notes dynamically based on code length for variety
+        const mockNotes = [
+          `Make sure to check the billing tab first for ${input}. Fixed it for me.`,
+          `I had to clear my browser cache to get past ${input} today.`,
+          `Escalated this one to Tier 2 yesterday and they said it's a known glitch.`
+        ];
+        const randomNote = mockNotes[input.length % mockNotes.length];
+        
+        document.getElementById('communityNotes').innerHTML = `
+          <div class="bg-amber-50 p-4 rounded text-sm border border-amber-200">
+            <p class="font-semibold text-amber-900">Agent <span class="text-amber-600 font-normal ml-2">Recently</span></p>
+            <p class="text-slate-800 mt-1">${randomNote}</p>
+            <div class="mt-3 border-t border-amber-200 pt-2"><button class="text-xs font-semibold text-slate-600">👍 Helpful</button></div>
+          </div>
+        `;
+        
         resultsArea.classList.remove('hidden');
         notFoundMessage.classList.add('hidden');
       } else {
-        // Show error, hide results
         resultsArea.classList.add('hidden');
         notFoundMessage.classList.remove('hidden');
       }
     }
 
-    // AI Simulation
     function generateAI() {
+      const currentCode = document.getElementById('errorCodeTitle').innerText;
       const responseContainer = document.getElementById('aiResponse');
       const loadingText = document.getElementById('aiLoading');
       const finalText = document.getElementById('aiText');
@@ -198,12 +259,37 @@
       finalText.classList.add('hidden');
       
       setTimeout(() => {
+        // Dynamic responses based on the error code searched
+        const aiVariations = [
+          `We are seeing a 12% spike in <strong>${currentCode}</strong> over the last 4 hours. Follow the standard path before escalating.`,
+          `Analyzing <strong>${currentCode}</strong>: Cross-referencing recent ECM tickets suggests this might be related to a temporary system sync delay. Wait 5 minutes and refresh.`,
+          `No widespread outages detected for <strong>${currentCode}</strong>. Proceed with the official agent action steps below.`,
+          `For <strong>${currentCode}</strong>, historical data shows a 60% success rate when the customer clears their local device cache/network settings.`
+        ];
+        
+        // Pick one somewhat predictably based on the code length so it doesn't change every single click on the same code
+        const responseText = aiVariations[currentCode.length % aiVariations.length];
+        
+        finalText.innerHTML = `<strong>AI Insight:</strong> ${responseText}`;
+        
         loadingText.classList.add('hidden');
         finalText.classList.remove('hidden');
       }, 1500);
     }
 
-    // Submit Form Simulation
+    function renderDictionary() {
+      const tbody = document.getElementById('dictionaryBody');
+      let html = '';
+      for (const [code, data] of Object.entries(errorDatabase)) {
+        html += `<tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                  <td class="p-4 font-bold text-slate-800">${code}</td>
+                  <td class="p-4">${data.description}</td>
+                  <td class="p-4 text-slate-600">${data.action}</td>
+                 </tr>`;
+      }
+      tbody.innerHTML = html;
+    }
+
     function submitFix(e) {
       e.preventDefault();
       alert("Success! Your workaround has been submitted to the moderation queue.");
