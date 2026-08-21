@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XM360 Error Pathing & Crowdsource Hub</title>
+  <title>XM360 Error Pathing & Community Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Custom animation for the scrolling banner */
     @keyframes marquee {
       0% { transform: translateX(100%); }
       100% { transform: translateX(-100%); }
@@ -15,8 +14,6 @@
       display: inline-block;
       animation: marquee 20s linear infinite;
     }
-    
-    /* Breathing effect for the Support Bridge tab */
     @keyframes breathe {
       0%, 100% { box-shadow: 0 0 5px rgba(220, 38, 38, 0.4); background-color: #fee2e2; }
       50% { box-shadow: 0 0 15px rgba(220, 38, 38, 0.8); background-color: #fca5a5; }
@@ -35,8 +32,8 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans" onload="renderDictionary()">
 
-  <!-- 1. PASSWORD LOCK SCREEN -->
-  <div id="loginOverlay" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center transition-opacity duration-300">
+  <!-- PASSWORD LOCK SCREEN -->
+  <div id="loginOverlay" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center transition-opacity duration-300">
     <div class="bg-white p-8 rounded-lg shadow-xl max-w-sm w-full text-center">
       <h2 class="text-2xl font-bold text-slate-800 mb-2">XM Hub Login</h2>
       <p class="text-sm text-slate-500 mb-6">Enter the team passphrase to access the concept.</p>
@@ -46,15 +43,15 @@
     </div>
   </div>
 
-  <!-- MAIN APP CONTAINER (Hidden until login) -->
-  <div id="mainApp" class="hidden h-screen flex flex-col overflow-y-auto">
+  <!-- MAIN APP CONTAINER -->
+  <div id="mainApp" class="hidden min-h-screen">
     
-    <!-- 4. SUPPORT BRIDGE SCROLLING BANNER -->
-    <div class="bg-red-600 text-white font-bold text-sm overflow-hidden py-2 whitespace-nowrap shadow-md relative z-40">
+    <!-- SUPPORT BRIDGE SCROLLING BANNER (Sticky) -->
+    <div class="bg-red-600 text-white font-bold text-sm overflow-hidden py-2 whitespace-nowrap shadow-md sticky top-0 z-50">
       <span class="animate-marquee">🚨 ACTIVE SUPPORT BRIDGE: XM360 Provisioning Delays. ETA to resolution: 45 Minutes. Store Managers: Please check into the Support Bridge tab to report your impacted headcount. 🚨</span>
     </div>
 
-    <div class="max-w-6xl mx-auto w-full p-6 flex-grow">
+    <div class="max-w-6xl mx-auto w-full p-6 pb-20">
       
       <!-- Header & Navigation -->
       <header class="mb-8 text-center">
@@ -65,8 +62,7 @@
           <button onclick="switchTab('search')" id="tab-search" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-full transition shadow">Error Lookup</button>
           <button onclick="switchTab('dictionary')" id="tab-dictionary" class="px-6 py-2 bg-white text-slate-600 border border-slate-300 font-semibold rounded-full hover:bg-slate-100 transition shadow-sm">Dictionary</button>
           <button onclick="switchTab('links')" id="tab-links" class="px-6 py-2 bg-white text-slate-600 border border-slate-300 font-semibold rounded-full hover:bg-slate-100 transition shadow-sm">Helpful Links</button>
-          <button onclick="switchTab('submit')" id="tab-submit" class="px-6 py-2 bg-white text-slate-600 border border-slate-300 font-semibold rounded-full hover:bg-slate-100 transition shadow-sm">Submit a Fix</button>
-          <!-- Pulsing Support Bridge Tab -->
+          <button onclick="switchTab('community')" id="tab-community" class="px-6 py-2 bg-white text-slate-600 border border-slate-300 font-semibold rounded-full hover:bg-slate-100 transition shadow-sm">Community</button>
           <button onclick="switchTab('bridge')" id="tab-bridge" class="px-6 py-2 border font-bold rounded-full transition shadow-sm tab-breathe">Support Bridge</button>
         </div>
       </header>
@@ -107,13 +103,10 @@
 
           <!-- Pathing Grid -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <!-- Official Agent Action & Pathing -->
             <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 h-full flex flex-col">
               <h3 class="text-lg font-semibold text-slate-800 border-b pb-2 mb-4">Official Agent Action</h3>
               <p class="text-sm text-slate-700 leading-relaxed mb-6" id="officialAction"></p>
               
-              <!-- 3. New Escalation Path Block -->
               <div class="mt-auto bg-slate-50 border border-slate-200 p-4 rounded-md">
                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Escalation Pathing</h4>
                 <ol class="list-decimal list-inside text-sm text-slate-700 space-y-1">
@@ -124,12 +117,9 @@
               </div>
             </div>
 
-            <!-- Community Notes -->
             <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 h-full">
               <h3 class="text-lg font-semibold text-slate-800 border-b pb-2 mb-4">Top Community Notes</h3>
-              <div class="space-y-4" id="communityNotes">
-                <!-- Dynamically populated to look somewhat real -->
-              </div>
+              <div class="space-y-4" id="communityNotes"></div>
             </div>
           </div>
         </div>
@@ -146,9 +136,7 @@
                 <th class="p-4">Agent Action</th>
               </tr>
             </thead>
-            <tbody id="dictionaryBody" class="text-sm text-slate-700 divide-y divide-slate-100">
-              <!-- Rendered by JS -->
-            </tbody>
+            <tbody id="dictionaryBody" class="text-sm text-slate-700 divide-y divide-slate-100"></tbody>
           </table>
         </div>
       </div>
@@ -156,47 +144,38 @@
       <!-- TAB 3: HELPFUL LINKS -->
       <div id="view-links" class="hidden max-w-4xl mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
           <a href="https://www.xfinity.com/mobile/" target="_blank" class="block p-5 bg-white rounded-lg shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-md transition">
             <h3 class="text-lg font-bold text-blue-700">Xfinity Mobile Home</h3>
             <p class="text-sm text-slate-500 mt-1">Public-facing Xfinity Mobile storefront and plan info.</p>
           </a>
-
           <a href="https://xm360.xfinity.com/LookupIMEI" target="_blank" class="block p-5 bg-white rounded-lg shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-md transition">
             <h3 class="text-lg font-bold text-blue-700">BYOD IMEI Lookup</h3>
             <p class="text-sm text-slate-500 mt-1">Direct link to XM360 to verify Bring Your Own Device eligibility.</p>
           </a>
-
           <a href="https://www.xfinity.com/learn/mobile/plan/savings-calculator/" target="_blank" class="block p-5 bg-white rounded-lg shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-md transition">
             <h3 class="text-lg font-bold text-blue-700">XM Savings Calculator</h3>
             <p class="text-sm text-slate-500 mt-1">Tool to show customers how much they will save switching to XM.</p>
           </a>
-
           <a href="https://celestial.cable.comcast.com/knowledge/article-info/?query=240319165608377" target="_blank" class="block p-5 bg-white rounded-lg shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-md transition">
             <h3 class="text-lg font-bold text-blue-700">Mobile Deals (Celestial)</h3>
             <p class="text-sm text-slate-500 mt-1">Internal knowledge base article for current mobile promotions.</p>
           </a>
-
           <a href="https://celestial.cable.comcast.com/knowledge/article-info/?query=200826155424716" target="_blank" class="block p-5 bg-white rounded-lg shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-md transition">
             <h3 class="text-lg font-bold text-blue-700">Device Activation Help</h3>
             <p class="text-sm text-slate-500 mt-1">Internal knowledge base article for activation troubleshooting.</p>
           </a>
-
           <a href="https://celestial.cable.comcast.com/knowledge/article-info/?query=241125144759307" target="_blank" class="block p-5 bg-white rounded-lg shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-md transition">
             <h3 class="text-lg font-bold text-blue-700">Device Trade-in List</h3>
             <p class="text-sm text-slate-500 mt-1">Internal KB article detailing eligible trade-in models and values.</p>
           </a>
-
           <a href="https://ecm.comcast.com/ecm?id=ecm_taxonomy_topic&topic_id=fd2fd5178713c1105e69ec2e0ebb358e" target="_blank" class="block p-5 bg-white rounded-lg shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-md transition">
             <h3 class="text-lg font-bold text-blue-700">ECM XM Support</h3>
             <p class="text-sm text-slate-500 mt-1">Enterprise Case Management hub for submitting Tier 2 support tickets.</p>
           </a>
-
           <a href="https://fetchitup.comcast.com/#/cpi/" target="_blank" class="block p-5 bg-white rounded-lg shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-md transition">
             <h3 class="text-lg font-bold text-blue-700">Fetchitup</h3>
             <p class="text-sm text-slate-500 mt-1">Customer Profile & Info tool for internal account lookup.</p>
           </a>
-
           <a href="https://xmtool.cable.comcast.com/xmnmtoolkit" target="_blank" class="block p-5 bg-white rounded-lg shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-md transition">
             <h3 class="text-lg font-bold text-blue-700">XM Network Tool</h3>
             <p class="text-sm text-slate-500 mt-1">Network Management Toolkit for advanced diagnostics.</p>
@@ -204,41 +183,94 @@
         </div>
       </div>
 
-      <!-- TAB 4: SUBMIT A FIX -->
-      <div id="view-submit" class="hidden max-w-2xl mx-auto">
-        <div class="bg-white p-8 rounded-lg shadow-sm border border-slate-200">
-          <h2 class="text-2xl font-bold text-slate-800 mb-2">Contribute a Workaround</h2>
-          <p class="text-slate-500 text-sm mb-6">Did you find a reliable way to resolve an undocumented error? Share it.</p>
+      <!-- TAB 4: COMMUNITY -->
+      <div id="view-community" class="hidden max-w-5xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           
-          <form onsubmit="submitFix(event)" class="space-y-5">
-            <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-1">Error Code</label>
-              <input type="text" placeholder="e.g., MBC-7305" class="w-full p-3 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase" required>
+          <!-- Column 1: Recent Workarounds & Wins -->
+          <div class="md:col-span-2 space-y-6">
+            
+            <!-- Recent Workarounds -->
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+              <h2 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Recent Workarounds</h2>
+              <div class="space-y-4">
+                <div class="p-4 bg-slate-50 rounded border border-slate-200">
+                  <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold mb-2">MBC-7305</span>
+                  <p class="text-sm text-slate-700 mb-2">"Found that if you back out to the customer dashboard and re-scan the IMEI rather than manually typing it, it bypasses the system lock."</p>
+                  <p class="text-xs text-slate-500 font-semibold">- Shared by Northeast Div • 2 hours ago</p>
+                </div>
+                <div class="p-4 bg-slate-50 rounded border border-slate-200">
+                  <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-bold mb-2">EC5100</span>
+                  <p class="text-sm text-slate-700 mb-2">"If customer just converted from NOW Internet to Postpaid, wait 15 minutes before attempting to add Mobile, otherwise it fails out."</p>
+                  <p class="text-xs text-slate-500 font-semibold">- Shared by Central Div • 5 hours ago</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-1">What did you experience?</label>
-              <textarea rows="2" class="w-full p-3 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+
+            <!-- Recent Wins -->
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+              <h2 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Recent Wins 🏆</h2>
+              <div class="space-y-3">
+                <div class="flex items-center text-sm text-slate-700">
+                  <span class="text-2xl mr-3">🚀</span>
+                  <p><strong>Store 4291</strong> successfully cleared a 3-day pending activation using the EC4400 community workaround!</p>
+                </div>
+                <div class="flex items-center text-sm text-slate-700">
+                  <span class="text-2xl mr-3">💡</span>
+                  <p><strong>West Div Ops</strong> officially verified the BYO-1900 bypass submitted yesterday. It has been added to official ECM flows.</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <label class="block text-sm font-semibold text-slate-700 mb-1">Your Workaround / Solution</label>
-              <textarea rows="4" class="w-full p-3 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
-            </div>
-            <button type="submit" class="w-full bg-green-600 text-white px-4 py-3 rounded font-semibold hover:bg-green-700 transition shadow">Submit for Review</button>
-          </form>
+
+          </div>
+
+          <!-- Column 2: Contribute Form -->
+          <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 h-fit">
+            <h2 class="text-xl font-bold text-slate-800 mb-2">Contribute a Workaround</h2>
+            <p class="text-slate-500 text-sm mb-6">Found a reliable bypass? Share it with the network.</p>
+            
+            <form onsubmit="submitFix(event)" class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Error Code</label>
+                <input type="text" placeholder="e.g., MBC-7305" class="w-full p-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase" required>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">What did you experience?</label>
+                <textarea rows="2" class="w-full p-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Your Solution</label>
+                <textarea rows="3" class="w-full p-2 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
+              </div>
+              <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded font-semibold hover:bg-green-700 transition shadow">Submit for Review</button>
+            </form>
+          </div>
+
         </div>
       </div>
 
-      <!-- TAB 5: SUPPORT BRIDGE (Outage Concept) -->
+      <!-- TAB 5: SUPPORT BRIDGE -->
       <div id="view-bridge" class="hidden max-w-3xl mx-auto">
         <div class="bg-white p-8 rounded-lg shadow-lg border-2 border-red-500 relative overflow-hidden">
           
-          <!-- Background alert icon -->
           <svg class="absolute -bottom-10 -right-10 w-64 h-64 text-red-50 opacity-50 pointer-events-none" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
 
           <div class="relative z-10">
             <h2 class="text-3xl font-black text-red-700 mb-2">ACTIVE SUPPORT BRIDGE</h2>
             <p class="text-red-600 font-semibold text-lg mb-6">Issue: XM360 Provisioning & Activation Delays</p>
             
+            <!-- Teams Bridge Link -->
+            <div class="bg-indigo-50 border border-indigo-200 p-5 rounded-lg mb-6 flex flex-col sm:flex-row justify-between items-center shadow-sm">
+              <div class="mb-4 sm:mb-0 text-center sm:text-left">
+                <p class="font-bold text-indigo-900 text-lg flex items-center justify-center sm:justify-start">
+                  <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5z"/></svg>
+                  Live Engineering Bridge
+                </p>
+                <p class="text-sm text-indigo-700 mt-1">Join the call for real-time updates and live QA testing.</p>
+              </div>
+              <a href="#" onclick="alert('This would open Microsoft Teams.')" class="bg-indigo-600 text-white px-6 py-3 rounded font-bold shadow hover:bg-indigo-700 transition w-full sm:w-auto text-center">Join Teams Meeting</a>
+            </div>
+
             <div class="bg-red-50 p-4 rounded mb-6 border border-red-100">
               <p class="text-sm text-red-800 leading-relaxed">
                 <strong>Status Update (14:30 EST):</strong> Engineering is currently investigating widespread failures when sending orders through XM360. Activations are getting stuck in a pending state. 
@@ -261,8 +293,8 @@
               </div>
               
               <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-1">Current Impacted Customers (Headcount)</label>
-                <input type="number" min="0" placeholder="Number of customers waiting..." class="w-full p-3 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500" required>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Current Impacted Employees (Headcount)</label>
+                <input type="number" min="0" placeholder="Number of employees affected..." class="w-full p-3 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500" required>
               </div>
 
               <div>
@@ -280,7 +312,6 @@
   </div>
 
   <script>
-    // 1. Password Logic
     function checkPassword() {
       const input = document.getElementById('passwordInput').value;
       if (input === 'retailisawesome') {
@@ -294,7 +325,6 @@
       }
     }
 
-    // Add enter key support for login
     document.getElementById("passwordInput").addEventListener("keypress", function(event) {
       if (event.key === "Enter") {
         event.preventDefault();
@@ -302,7 +332,6 @@
       }
     });
 
-    // 2. Error Database
     const errorDatabase = {
       "BYO-700": { description: "Device is tied to a pre-activated line.", action: "Check for the pending order in the Account History page of XM360. If you can’t resolve the pending order, escalate using the steps listed above." },
       "BYO-1000": { description: "Device is not eligible.", action: "Research where the device came from to confirm whether it is an eligible Xfinity device. If it is, follow the standard escalation steps." },
@@ -379,7 +408,7 @@
     };
 
     function switchTab(tab) {
-      const allTabs = ['search', 'dictionary', 'links', 'submit', 'bridge'];
+      const allTabs = ['search', 'dictionary', 'links', 'community', 'bridge'];
       
       allTabs.forEach(t => {
         const view = document.getElementById(`view-${t}`);
@@ -387,7 +416,6 @@
         
         if (t === tab) {
           view.classList.remove('hidden');
-          
           if (t === 'bridge') {
             btn.className = "px-6 py-2 border font-bold rounded-full transition shadow-sm tab-breathe-active";
           } else {
@@ -395,7 +423,6 @@
           }
         } else {
           view.classList.add('hidden');
-          
           if (t === 'bridge') {
             btn.className = "px-6 py-2 border font-bold rounded-full transition shadow-sm tab-breathe";
           } else {
@@ -405,7 +432,6 @@
       });
     }
 
-    // Execute search on enter key in search box
     document.getElementById("searchInput").addEventListener("keypress", function(event) {
       if (event.key === "Enter") {
         event.preventDefault();
@@ -428,8 +454,6 @@
         document.getElementById('errorCodeTitle').innerText = input;
         document.getElementById('errorDescription').innerText = errorDatabase[input].description;
         document.getElementById('officialAction').innerText = errorDatabase[input].action;
-        
-        // 3. Populate Pathing Example dynamically
         document.getElementById('pathingErrorCode').innerText = input;
         
         const mockNotes = [
@@ -498,7 +522,6 @@
       e.preventDefault();
       alert("Success! Your workaround has been submitted to the moderation queue.");
       e.target.reset();
-      switchTab('search');
     }
 
     function submitBridge(e) {
